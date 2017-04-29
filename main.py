@@ -1,20 +1,8 @@
-from typing import List, Tuple
-
 from numpy.core.multiarray import ndarray
 
-def extract_structure_information(data: ndarray) -> Tuple[List[int], List[int], List[int]]:
-    """
-    Extract structure information from the dataset
-    
-    :param data: a numpy-matrix. each column represents an attribute; each row a data item
-    :return: a tuple of lists: (cluster supporting objects, cluster outliers, rest), 
-        where each list contains the indices of the objects in the data matrix 
-        * Cluster Supporting Object (CSO): object with density higher than all its neighbors
-        * Cluster Outliers: object with density lower than all its neighbors, and lower than a predefined threshold
-        * Rest Object: object not assigned to one of the previous groups
-    """
-    pass
+from typing import List, Tuple, Dict
 
+from structure_information_extraction import extract_structure_information
 
 def fuzzy_approximation(
         data: ndarray,
@@ -33,12 +21,14 @@ def fuzzy_approximation(
     pass
 
 
-def flame_cluster(data: ndarray) -> List[int]:
+def flame_cluster(data: ndarray, k: int, outlier_threshold: float) -> List[int]:
     """
     Main function. Coordinates the two phases required by the algorithm
     
     :param data: a numpy-matrix. each column represents an attribute; each row a data item
+    :param k: the amount of neighbours to use for the initial knn graph
+    :param outlier_threshold: the maximum density an outlier can have
     :return: a list of labels.
     """
-    structure_information = extract_structure_information(data)
+    structure_information = extract_structure_information(data, k, outlier_threshold)
     return fuzzy_approximation(*structure_information)
