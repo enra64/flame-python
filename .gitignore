@@ -27,6 +27,8 @@ cmake-build-debug/
 # Mongo Explorer plugin:
 .idea/**/mongoSettings.xml
 
+__pycache__/*
+
 ## File-based project format:
 *.iws
 
