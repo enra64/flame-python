@@ -8,6 +8,10 @@
 * haben wir die labels richtig verstanden
 * sind die input variablen float?
 
+# parameter
+* k für die initial clustering
+* schwelle für outliers
+
 # todo
 ## enra64: structure information extraction
 * documentation
