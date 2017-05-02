@@ -24,16 +24,38 @@ def fuzzy_approximation(
     pass
 
 
-def flame_cluster(data: ndarray, k: int, outlier_threshold: float) -> List[int]:
+def flame_cluster(data: ndarray, k: int, outlier_threshold: float, distance_measure: str) -> List[int]:
     """
     Main function. Coordinates the two phases required by the algorithm
     
     :param data: a numpy-matrix. each column represents an attribute; each row a data item
     :param k: the amount of neighbours to use for the initial knn graph
     :param outlier_threshold: the maximum density an outlier can have
+    :param distance_measure: a str describing the distance measure:  
+        ‘braycurtis’, 
+        ‘canberra’, 
+        ‘chebyshev’, 
+        ‘cityblock’, 
+        ‘correlation’, 
+        ‘cosine’, 
+        ‘dice’, 
+        ‘euclidean’, 
+        ‘hamming’, 
+        ‘jaccard’, 
+        ‘kulsinski’, 
+        ‘mahalanobis’, 
+        ‘matching’, 
+        ‘minkowski’, 
+        ‘rogerstanimoto’, 
+        ‘russellrao’, 
+        ‘seuclidean’, 
+        ‘sokalmichener’, 
+        ‘sokalsneath’, 
+        ‘sqeuclidean’, 
+        ‘yule’
     :return: a list of labels.
     """
-    structure_information = extract_structure_information(data, k, outlier_threshold)
+    structure_information = extract_structure_information(data, k, outlier_threshold, distance_measure)
     return fuzzy_approximation(data, *structure_information)
 
 
@@ -43,4 +65,4 @@ if __name__ == "__main__":
     """
     # load iris test set, but cut off the last column, since that contains the class label
     data = numpy.array(arff.load(open("iris.arff", 'r'))["data"], dtype=float)[:, :-1]
-    flame_cluster(data, 3, .1)
+    flame_cluster(data, 3, .1, "euclidean")

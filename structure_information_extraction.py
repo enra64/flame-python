@@ -1,58 +1,17 @@
 from typing import List, Tuple, Callable
 
+from scipy.spatial.distance import squareform, pdist
+
 from distance_measures import *
 
 
-def get_distance_matrix(data: ndarray, distance_function: Callable[[ndarray, int, int], float]) -> ndarray:
-    """
-    Get a distance matrix for the data given.
-    
-    :param data: a numpy matrix. each column represents an attribute; each row a data item
-    :param distance_function: a function that takes the data matrix and two indices, and returns the distance between 
-        the objects at index one and two
-    :return: an array of distances between i,j data elements where i,j are valid data object indices
-    """
-    item_count = data.shape[0]
-    distances = numpy.ndarray(shape=(item_count, item_count), dtype=float)
-    for i in range(item_count):
-        for j in range(item_count):
-            distances[i, j] = distance_function(data, i, j)
-    return distances
-
-
-def get_knn_graph(k: int, distances: ndarray) -> ndarray:
-    """
-    Create a k-nearest-neighbour-graph as a numpy matrix
-     
-    :param k: the "k" in k-nearest-neighbours
-    :param distances: an array of distances between i,j data elements where i,j are valid data object indices
-    :return: a 2D ndarray containing a row for each data item. Each row contains k columns denoting the nearest neighbours
-    """
-    # fish out the indices of the k lowest distances, store as the k nearest neighbours, ignoring the first one, hoping
-    # because that is guaranteed to be the (i,i) distance
-    return numpy.apply_along_axis(lambda row: row.argsort()[1:k + 1], arr=distances, axis=1)
-
-
-def get_densities(knn_graph: ndarray, distances: ndarray) -> ndarray:
-    """
-    Calculate a 1D array of item densities
-    
-    :param knn_graph: a 2D ndarray containing a row for each data item. Each row contains k columns denoting the nearest neighbours
-    :param distances: an array of distances between i,j data elements where i,j are valid data object indices
-    :return: a 1D numpy array containing the density for object i at index i 
-    """
-    number_of_items = knn_graph.shape[0]
-    k = knn_graph.shape[1]
-    max_distance = numpy.max(distances)
-
-    # calculate the density for each item
-    densities = numpy.empty((number_of_items,), dtype=float)
-    for i in range(number_of_items):
-        densities[i] = (max_distance / (numpy.sum(distances[i].take(knn_graph[i])) / k))
-    return densities
-
-
-def extract_structure_information(data: ndarray, k: int, outlier_threshold: float) -> Tuple[
+def extract_structure_information(
+        data: ndarray,
+        k: int,
+        outlier_threshold: float,
+        distance_measure: str,
+        minkowski_p: float = None,
+        weighted_minkowsky_weights: List[float] = None) -> Tuple[
     List[int], List[int], List[int]]:
     """
     Extract structure information from the dataset
@@ -60,26 +19,62 @@ def extract_structure_information(data: ndarray, k: int, outlier_threshold: floa
     :param data: a numpy-matrix. each column represents an attribute; each row a data item
     :param k: the amount of neighbours to use for the initial knn graph
     :param outlier_threshold: the maximum density an outlier can have
+    :param distance_measure: a str describing the distance measure:  
+        ‘braycurtis’, 
+        ‘canberra’, 
+        ‘chebyshev’, 
+        ‘cityblock’, 
+        ‘correlation’, 
+        ‘cosine’, 
+        ‘dice’, 
+        ‘euclidean’, 
+        ‘hamming’, 
+        ‘jaccard’, 
+        ‘kulsinski’, 
+        ‘mahalanobis’, 
+        ‘matching’, 
+        ‘minkowski’, 
+        ‘rogerstanimoto’, 
+        ‘russellrao’, 
+        ‘seuclidean’, 
+        ‘sokalmichener’, 
+        ‘sokalsneath’, 
+        ‘sqeuclidean’, 
+        ‘yule’
+    :param minkowski_p: The p-norm to apply Only for Minkowski, weighted and unweighted. Mandatory
+    :param weighted_minkowsky_weights: The weight vector. Only for weighted Minkowski. Mandatory
     :return: a tuple of lists: (cluster supporting objects, cluster outliers, rest), 
         where each list contains the indices of the objects in the data matrix 
         * Cluster Supporting Object (CSO): object with density higher than all its neighbors
         * Cluster Outliers: object with density lower than all its neighbors, and lower than a predefined threshold
         * Rest Object: object not assigned to one of the previous groups
     """
-    # get a distance matrix describing our data
-    distance_matrix = get_distance_matrix(data, distance_euclidean)
+    # distance_matrix = get_distance_matrix(data, distance_euclidean)
+    if distance_measure == 'minkowski' or distance_measure == 'wminkowski':
+        assert minkowski_p is not None, "Minkowski distance requires a p value to be supplied!"
+
+    if distance_measure == 'wminkowski':
+        assert weighted_minkowsky_weights is not None, "Weighted Minkowski distance requires a weight vector!"
+
+    # get a distance matrix describing our data from scipy, square it so the knn graph is one line
+    distance_matrix = squareform(pdist(data, distance_measure, p=minkowski_p, w=weighted_minkowsky_weights))
 
     # get a matrix describing the k nearest neighbours for each item
-    knn_graph = get_knn_graph(k, distance_matrix)
+    knn_graph = numpy.apply_along_axis(lambda row: row.argsort()[1:k + 1], arr=distance_matrix, axis=1)
 
-    # calculate the density of each item
-    densities = get_densities(knn_graph, distance_matrix)
+    # calculate the density for each item
+    max_distance = numpy.max(distance_matrix)
+    item_count = knn_graph.shape[0]
+    densities = numpy.empty((item_count,), dtype=float)
+    for i in range(item_count):
+        densities[i] = (max_distance / (numpy.sum(distance_matrix[i].take(knn_graph[i])) / k))
 
-    # sort the items into their respective bin
+    # create item bins
     cluster_supporting_objects = []
     outliers = []
     rest = []
 
+    # sort items
     for i in range(densities.shape[0]):
         knn_densities = densities.take(knn_graph[i])
         item_density = densities[i]
