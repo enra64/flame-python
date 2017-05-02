@@ -1,5 +1,8 @@
+import timeit
+
 import arff
 import numpy
+import time
 from numpy.core.multiarray import ndarray
 
 from typing import List
@@ -59,10 +62,27 @@ def flame_cluster(data: ndarray, k: int, outlier_threshold: float, distance_meas
     return fuzzy_approximation(data, *structure_information)
 
 
+def time_flame(data, count):
+    """
+    Time our implementation of the algorithm
+    
+    :param data: a numpy-matrix. each column represents an attribute; each row a data item
+    :param count: over how many iterations the average should be built
+    :return: average execution duration in seconds
+    """
+    execution_duration_sum = 0
+    for i in range(count):
+        start = time.time()
+        flame_cluster(data, 3, .1, "euclidean")
+        execution_duration_sum += time.time() - start
+    return execution_duration_sum / count
+
 if __name__ == "__main__":
     """
     If run as main, this script will try to cluster the iris data set
     """
     # load iris test set, but cut off the last column, since that contains the class label
     data = numpy.array(arff.load(open("iris.arff", 'r'))["data"], dtype=float)[:, :-1]
-    flame_cluster(data, 3, .1, "euclidean")
+
+    # get best result of 10 averaged iterations
+    print("Average exec duration {} [s]".format(min([time_flame(data, 1000) for i in range(10)])))

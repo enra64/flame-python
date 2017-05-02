@@ -49,25 +49,26 @@ def extract_structure_information(
         * Cluster Outliers: object with density lower than all its neighbors, and lower than a predefined threshold
         * Rest Object: object not assigned to one of the previous groups
     """
-    # distance_matrix = get_distance_matrix(data, distance_euclidean)
+    # check that a p value exists if minkowski distance is used
     if distance_measure == 'minkowski' or distance_measure == 'wminkowski':
         assert minkowski_p is not None, "Minkowski distance requires a p value to be supplied!"
-
-    if distance_measure == 'wminkowski':
+    # check that a weight vector exists if weighted minkowski is used
+    elif distance_measure == 'wminkowski':
         assert weighted_minkowsky_weights is not None, "Weighted Minkowski distance requires a weight vector!"
 
-    # get a distance matrix describing our data from scipy, square it so the knn graph is one line
+    # get a distance matrix describing our data from scipy, square it so creating the knn graph is easy
     distance_matrix = squareform(pdist(data, distance_measure, p=minkowski_p, w=weighted_minkowsky_weights))
 
-    # get a matrix describing the k nearest neighbours for each item
+    # create an adjacency list describing the k nearest neighbours for each item
     knn_graph = numpy.apply_along_axis(lambda row: row.argsort()[1:k + 1], arr=distance_matrix, axis=1)
 
     # calculate the density for each item
     max_distance = numpy.max(distance_matrix)
     item_count = knn_graph.shape[0]
+
     densities = numpy.empty((item_count,), dtype=float)
     for i in range(item_count):
-        densities[i] = (max_distance / (numpy.sum(distance_matrix[i].take(knn_graph[i])) / k))
+        densities[i] = max_distance / (numpy.sum(distance_matrix[i].take(knn_graph[i])) / k)
 
     # create item bins
     cluster_supporting_objects = []
