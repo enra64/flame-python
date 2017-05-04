@@ -82,7 +82,7 @@ if __name__ == "__main__":
     If run as main, this script will try to cluster the iris data set
     """
     # load iris test set, but cut off the last column, since that contains the class label
-    data = numpy.array(arff.load(open("iris.arff", 'r'))["data"], dtype=float)[:, :-1]
+    data = numpy.array(arff.load(open("letters.arff", 'r'))["data"], dtype=float)[:, :-1]
 
     # get best result of 10 averaged iterations
-    print("Average exec duration {} [s]".format(min([time_flame(data, 1000) for i in range(10)])))
+    print("Average exec duration {} [s]".format(min([time_flame(data, 10) for i in range(5)])))

@@ -1,5 +1,6 @@
 from typing import List, Tuple, Callable
 
+import sys
 from scipy.spatial.distance import squareform, pdist
 
 from distance_measures import *
@@ -56,6 +57,9 @@ def extract_structure_information(
     elif distance_measure == 'wminkowski':
         assert weighted_minkowsky_weights is not None, "Weighted Minkowski distance requires a weight vector!"
 
+    item_count = data.shape[0]
+    assert 0 < k < item_count, "0 < k({}) < #items({}) must hold!".format(k, item_count)
+
     # get a distance matrix describing our data from scipy, square it so creating the knn graph is easy
     distance_matrix = squareform(pdist(data, distance_measure, p=minkowski_p, w=weighted_minkowsky_weights))
 
@@ -64,11 +68,14 @@ def extract_structure_information(
 
     # calculate the density for each item
     max_distance = numpy.max(distance_matrix)
-    item_count = knn_graph.shape[0]
 
     densities = numpy.empty((item_count,), dtype=float)
     for i in range(item_count):
-        densities[i] = max_distance / (numpy.sum(distance_matrix[i].take(knn_graph[i])) / k)
+        distance_sum = (numpy.sum(distance_matrix[i].take(knn_graph[i])) / k)
+        if distance_sum > 0:
+            densities[i] = max_distance / distance_sum
+        else:
+            densities[i] = sys.float_info.max
 
     # create item bins
     cluster_supporting_objects = []
