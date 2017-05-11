@@ -1,6 +1,7 @@
+# -*- coding: utf-8 -*-
 import timeit
 
-import arff
+from scipy.io import arff
 import numpy
 import time
 from numpy.core.multiarray import ndarray
@@ -11,10 +12,10 @@ from structure_information_extraction import extract_structure_information
 
 
 def fuzzy_approximation(
-        data: ndarray,
-        cluster_supporting_objects: List[int],
-        cluster_outliers: List[int],
-        the_rest: List[int]) -> List[int]:
+        data,
+        cluster_supporting_objects,
+        cluster_outliers,
+        the_rest):
     """
     Approximate the fuzzy memberships of each data item
     
@@ -27,7 +28,7 @@ def fuzzy_approximation(
     pass
 
 
-def flame_cluster(data: ndarray, k: int, outlier_threshold: float, distance_measure: str) -> List[int]:
+def flame_cluster(data, k, outlier_threshold, distance_measure):
     """
     Main function. Coordinates the two phases required by the algorithm
     
@@ -79,10 +80,11 @@ def time_flame(data, count):
 
 if __name__ == "__main__":
     """
-    If run as main, this script will try to cluster the iris data set
+    If run as main, this script will try to cluster some data set
     """
     # load iris test set, but cut off the last column, since that contains the class label
-    data = numpy.array(arff.load(open("letters.arff", 'r'))["data"], dtype=float)[:, :-1]
+    data, meta = arff.loadarff(open("letters.arff", 'r'))
+    data = data[meta.names()[:-1]].view(numpy.float).reshape(data.shape + (-1,))
 
     # get best result of 10 averaged iterations
     print("Average exec duration {} [s]".format(min([time_flame(data, 10) for i in range(5)])))

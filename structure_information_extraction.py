@@ -1,19 +1,18 @@
-from typing import List, Tuple, Callable
+# -*- coding: utf-8 -*-
 
 import sys
-from scipy.spatial.distance import squareform, pdist
 
-from distance_measures import *
+import numpy
+from scipy.spatial.distance import squareform, pdist
 
 
 def extract_structure_information(
-        data: ndarray,
-        k: int,
-        outlier_threshold: float,
-        distance_measure: str,
-        minkowski_p: float = None,
-        weighted_minkowsky_weights: List[float] = None) -> Tuple[
-    List[int], List[int], List[int]]:
+        data,
+        k,
+        outlier_threshold,
+        distance_measure,
+        minkowski_p= None,
+        weighted_minkowsky_weights = None):
     """
     Extract structure information from the dataset
 
@@ -86,17 +85,17 @@ def extract_structure_information(
     for i in range(densities.shape[0]):
         knn_densities = densities.take(knn_graph[i])
         item_density = densities[i]
-        # print("item {} with density {}; max neighbour density {}, min nd {}, sorted into".format(i, item_density, knn_densities.max(), knn_densities.min()), end="")
+        # print "item {} with density {}; max neighbour density {}, min nd {}, sorted into".format(i, item_density, knn_densities.max(), knn_densities.min()), end=""
         if item_density <= outlier_threshold and densities[i] < knn_densities.min():
             outliers.append(i)
-            # print(" outliers")
+            # print " outliers"
         elif item_density > knn_densities.max():
             cluster_supporting_objects.append(i)
-            # print(" csos")
+            # print " csos"
         else:
-            # print(" rest")
+            # print " rest"
             rest.append(i)
 
-    # print("{} csos, {} outliers, {} rest".format(len(cluster_supporting_objects), len(outliers), len(rest)))
+    # print "{} csos, {} outliers, {} rest".format(len(cluster_supporting_objects), len(outliers), len(rest))
 
     return cluster_supporting_objects, outliers, rest
