@@ -17,6 +17,10 @@
 .idea/**/dynamic.xml
 .idea/**/uiDesigner.xml
 
+# ignore datasets
+datasets.json
+datasets/*
+
 # Gradle:
 .idea/**/gradle.xml
 .idea/**/libraries

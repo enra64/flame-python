@@ -1,12 +1,7 @@
 # -*- coding: utf-8 -*-
-import timeit
-
-from scipy.io import arff
-import numpy
-import time
-from numpy.core.multiarray import ndarray
-
-from typing import List
+import json
+import urllib
+import test
 
 from structure_information_extraction import extract_structure_information
 
@@ -63,28 +58,29 @@ def flame_cluster(data, k, outlier_threshold, distance_measure):
     return fuzzy_approximation(data, *structure_information)
 
 
-def time_flame(data, count):
-    """
-    Time our implementation of the algorithm
-    
-    :param data: a numpy-matrix. each column represents an attribute; each row a data item
-    :param count: over how many iterations the average should be built
-    :return: average execution duration in seconds
-    """
-    execution_duration_sum = 0
-    for i in range(count):
-        start = time.time()
-        flame_cluster(data, 3, .1, "euclidean")
-        execution_duration_sum += time.time() - start
-    return execution_duration_sum / count
+def dl_sets():
+    """Helper function to try and download all data sets for testing purposes"""
+    with open('datasets.json') as data_file:
+        data = json.load(data_file)
+
+    no = 1
+    for set in data.itervalues():
+        name = set["name"]
+        training = "http://www.learning-challenge.de" + set["url_training_arff"].rstrip("/")
+        test = "http://www.learning-challenge.de" + set["url_test_arff"].rstrip("/")
+
+        if "data" in test:
+            print(test)
+        if "data" in training:
+            print(training)
+        urllib.urlretrieve(test, "datasets/" + name + '_test.arff')
+        urllib.urlretrieve(training, "datasets/" + name + '_training.arff')
+
+        no += 1
+
 
 if __name__ == "__main__":
     """
-    If run as main, this script will try to cluster some data set
+    If run as main, all tests will be run
     """
-    # load iris test set, but cut off the last column, since that contains the class label
-    data, meta = arff.loadarff(open("letters.arff", 'r'))
-    data = data[meta.names()[:-1]].view(numpy.float).reshape(data.shape + (-1,))
-
-    # get best result of 10 averaged iterations
-    print("Average exec duration {} [s]".format(min([time_flame(data, 10) for i in range(5)])))
+    test.run_tests(lambda data, measure: flame_cluster(data, 3, 0.1, measure))
