@@ -86,6 +86,16 @@ def test_dataset_all(cluster_function, data_set_path):
         cluster_function(data, measure)
 
 
+def test_iris_euclidean(cluster_function):
+    """
+    Test cluster function with a single dataset and euclidean measure 
+    
+    :param cluster_function: the clustering function. Signature is clustering(data: ndarray, distance_measure: str) 
+    :return: nothing
+    """
+    cluster_function(__load_file("datasets/c_Iris_test.arff"), "euclidean")
+
+
 def run_tests(cluster_function):
     """
     Run all available tests
