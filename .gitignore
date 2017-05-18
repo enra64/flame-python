@@ -32,6 +32,7 @@ cmake-build-debug/
 .idea/**/mongoSettings.xml
 
 __pycache__/*
+*.pyc
 
 ## File-based project format:
 *.iws
