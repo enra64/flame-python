@@ -39,7 +39,7 @@ def flame_cluster(data, k, outlier_threshold, distance_measure):
     :return: a list of labels.
     """
     structure_information = extract_structure_information(data, k, outlier_threshold, distance_measure)
-    return fuzzy_approximation(data, *structure_information)
+    return fuzzy_approximation(data, k, 10, *structure_information)
 
 
 def dl_sets():
@@ -67,5 +67,5 @@ if __name__ == "__main__":
     """
     If run as main, all tests will be run
     """
-    test.test_iris_euclidean(lambda data, measure: flame_cluster(data, 3, 0.1, measure))
+    test.test_iris_euclidean(lambda data, measure: flame_cluster(data, 10, 0.1, measure))
     #test.run_tests(lambda data, measure: flame_cluster(data, 3, 0.1, measure))

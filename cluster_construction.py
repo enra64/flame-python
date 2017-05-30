@@ -1,25 +1,22 @@
-def cluster_construction(
-        data,
-        *params):
+def cluster_construction(data, cso_count, members):
 
-    i, j, imax;
-    N = self->N;
-    C = self->cso_count+1;
-    fmax;
-    fuzzyships = self->fuzzyships;
-    clust;
+    N = data.shape[0]
+    C = cso_count+1
+    memberships = members
+    clusters = []
 
     """
     Sort objects based on the "entropy" of fuzzy memberships.
     """
     for i in range(0, N, 1):
-        vals[i].index = i;
-        vals[i].value = 0.0;
+        vals[i].index = i
+        vals[i].value = 0.0
         for j in range(0, C, 1):
-            fs = fuzzyships[i][j];
-            if( fs > EPSILON ) vals[i].value -= fs * log( fs );
+            fs = memberships[i][j]
+            if( fs > 1E-9):
+                vals[i].value -= fs * log( fs )
 
-    PartialQuickSort( vals, 0, N-1, N );
+    #PartialQuickSort( vals, 0, N-1, N )
 
     if( thd <0 || thd > 1.0 ):
         """
@@ -27,15 +24,15 @@ def cluster_construction(
          * in which it has the highest membership.
          """
         for i in range(0, N, 1):
-            id = vals[i].index;
-            fmax = 0;
-            imax = -1;
+            id = vals[i].index
+            fmax = 0
+            imax = -1
             for j in range(0, C, 1):
-                if( fuzzyships[id][j] > fmax ):
-                    imax = j;
-                    fmax = fuzzyships[id][j];
+                if( memberships[id][j] > fmax ):
+                    imax = j
+                    fmax = memberships[id][j]
 
-            IntArray_Push( self->clusters + imax, id );
+            #IntArray_Push( self->clusters + imax, id )
 
     else:
         """
@@ -44,26 +41,26 @@ def cluster_construction(
          otherwise, assign it to the outlier group.
          """
         for i in range(0, N, 1):
-            id = vals[i].index;
-            imax = -1;
+            id = vals[i].index
+            imax = -1
             for j in range(0, C, 1):
-                if( fuzzyships[id][j] > thd || ( j == C-1 && imax <0 ) ):
-                    imax = j;
-                    clust = self->clusters + j;
-                    IntArray_Push( self->clusters + j, id );
+                if( memberships[id][j] > thd || ( j == C-1 && imax <0 ) ):
+                    imax = j
+                    clust = clusters + j
+                    #IntArray_Push( self->clusters + j, id )
     """
     removing empty clusters
     """
     C = 0;
     for i in range(0, cso_count, 1):
-        if( self->clusters[i].size >0 ):
-            self->clusters[C] = self->clusters[i];
-            C ++;
+        if( clusters[i].size >0 ):
+            clusters[C] = clusters[i]
+            C +=1
 
 
     """
     keep the outlier group, even if its empty
     """
-    self->clusters[C] = self->clusters[self->cso_count];
-    C ++;
-    self->count = C;
+    clusters[C] = clusters[cso_count]
+    C ++
+    self->count = C

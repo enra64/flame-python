@@ -19,32 +19,32 @@ def extract_structure_information(
     :param data: a numpy-matrix. each column represents an attribute; each row a data item
     :param k: the amount of neighbours to use for the initial knn graph
     :param outlier_threshold: the maximum density an outlier can have
-    :param distance_measure: a str describing the distance measure:  
-        ‘braycurtis’, 
-        ‘canberra’, 
-        ‘chebyshev’, 
-        ‘cityblock’, 
-        ‘correlation’, 
-        ‘cosine’, 
-        ‘dice’, 
-        ‘euclidean’, 
-        ‘hamming’, 
-        ‘jaccard’, 
-        ‘kulsinski’, 
-        ‘mahalanobis’, 
-        ‘matching’, 
-        ‘minkowski’, 
-        ‘rogerstanimoto’, 
-        ‘russellrao’, 
-        ‘seuclidean’, 
-        ‘sokalmichener’, 
-        ‘sokalsneath’, 
-        ‘sqeuclidean’, 
+    :param distance_measure: a str describing the distance measure:
+        ‘braycurtis’,
+        ‘canberra’,
+        ‘chebyshev’,
+        ‘cityblock’,
+        ‘correlation’,
+        ‘cosine’,
+        ‘dice’,
+        ‘euclidean’,
+        ‘hamming’,
+        ‘jaccard’,
+        ‘kulsinski’,
+        ‘mahalanobis’,
+        ‘matching’,
+        ‘minkowski’,
+        ‘rogerstanimoto’,
+        ‘russellrao’,
+        ‘seuclidean’,
+        ‘sokalmichener’,
+        ‘sokalsneath’,
+        ‘sqeuclidean’,
         ‘yule’
     :param minkowski_p: The p-norm to apply Only for Minkowski, weighted and unweighted. Mandatory
     :param weighted_minkowsky_weights: The weight vector. Only for weighted Minkowski. Mandatory
-    :return: a tuple of lists: (cluster supporting objects, cluster outliers, rest), 
-        where each list contains the indices of the objects in the data matrix 
+    :return: a tuple of lists: (cluster supporting objects, cluster outliers, rest),
+        where each list contains the indices of the objects in the data matrix
         * Cluster Supporting Object (CSO): object with density higher than all its neighbors
         * Cluster Outliers: object with density lower than all its neighbors, and lower than a predefined threshold
         * Rest Object: object not assigned to one of the previous groups
@@ -98,4 +98,5 @@ def extract_structure_information(
 
     # print "{} csos, {} outliers, {} rest".format(len(cluster_supporting_objects), len(outliers), len(rest))
 
-    return cluster_supporting_objects, outliers, rest
+
+    return cluster_supporting_objects, outliers, rest, distance_matrix, knn_graph
