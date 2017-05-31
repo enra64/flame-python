@@ -20,6 +20,7 @@
 # ignore datasets
 datasets.json
 datasets/*
+*.pyc
 
 # Gradle:
 .idea/**/gradle.xml

@@ -57,7 +57,12 @@ def extract_structure_information(
         assert weighted_minkowsky_weights is not None, "Weighted Minkowski distance requires a weight vector!"
 
     item_count = data.shape[0]
-    assert 0 < k < item_count, "0 < k({}) < #items({}) must hold!".format(k, item_count)
+
+    if k > item_count:
+        raise ValueError("More clusters than data points requested!")
+
+    if k <= 0:
+        raise ValueError("No Cluster center requested")
 
     # get a distance matrix describing our data from scipy, square it so creating the knn graph is easy
     distance_matrix = squareform(pdist(data, distance_measure, p=minkowski_p, w=weighted_minkowsky_weights))

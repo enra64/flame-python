@@ -20,8 +20,11 @@ def __load_file(path):
     :return: a numpy-matrix. each column represents an attribute; each row a data item
     """
     data, meta = arff.loadarff(open(path, 'r'))
-    print("load " + path)
-    return data[meta.names()[:-1]].view(numpy.float).reshape(data.shape + (-1,))
+    if data.shape == (0,):
+        print("EMPTY DATA SET:\t\t\t\t\t\t\t\t\t\t" + meta.name.strip("\""))
+        return numpy.empty((0, len(meta._attributes))), 0
+    else:
+        return data[meta.names()[:-1]].view(numpy.float).reshape(data.shape + (-1,)), data.shape[0]
 
 
 def time_flame(cluster_function, data, measure, count):
@@ -54,7 +57,10 @@ def test_exec_duration(cluster_function, measure, path, iterations, sub_iteratio
     :param sub_iterations: how often each sub iteration times the algorithm
     :return: 
     """
-    data = __load_file(path)
+    data, length = __load_file(path)
+
+    if length <= 0:
+        return
 
     # get best result of 10 averaged iterations
     print("Average exec duration {} [s]".format(
@@ -69,8 +75,12 @@ def test_all_measure(cluster_function, measure):
     :param measure: the distance measure to be used; as seen in scipys pdist
     :return: nothing
     """
+    print("test all sets with " + measure)
     for data_set_path in [f for f in listdir("datasets") if isfile(join("datasets", f))]:
-        cluster_function(__load_file("datasets/" + data_set_path), measure)
+        dataset, length = __load_file("datasets/" + data_set_path)
+        print("\trunning " + data_set_path)
+        if length > 0:
+            cluster_function(dataset, measure)
 
 
 def test_dataset_all(cluster_function, data_set_path):
@@ -81,9 +91,10 @@ def test_dataset_all(cluster_function, data_set_path):
     :param data_set_path: path to the data set
     :return: nothing
     """
-    data = __load_file(data_set_path)
-    for measure in __available_measures:
-        cluster_function(data, measure)
+    data, length = __load_file(data_set_path)
+    if length > 0:
+        for measure in __available_measures:
+            cluster_function(data, measure)
 
 
 def test_iris_euclidean(cluster_function):
@@ -93,7 +104,9 @@ def test_iris_euclidean(cluster_function):
     :param cluster_function: the clustering function. Signature is clustering(data: ndarray, distance_measure: str) 
     :return: nothing
     """
-    cluster_function(__load_file("datasets/c_Iris_test.arff"), "euclidean")
+    dataset, length = __load_file("datasets/c_Iris_test.arff")
+    if length > 0:
+        cluster_function(dataset, "euclidean")
 
 
 def run_tests(cluster_function):
