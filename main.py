@@ -62,10 +62,31 @@ def dl_sets():
 
         no += 1
 
+def dl_missing():
+    import os
+    from scipy.io import arff
+    for file_name in os.listdir("datasets/"):
+        no_test_points, no_training_points = False, False
+        with open("datasets/" + file_name, "r") as file:
+            d = file.readlines()
+            no_training_points = d[10].endswith(" 0\n")
+            no_test_points = d[11].endswith(" 0\n")
+
+
+        if "training" in file_name and no_training_points:
+            print(file_name + " has no training points")
+            os.rename("datasets/" + file_name, "datasets/empty_" + file_name)
+
+        if "test" in file_name and no_test_points:
+            print(file_name + " has no test points")
+            os.rename("datasets/" + file_name, "datasets/empty_" + file_name)
+
+
 
 if __name__ == "__main__":
     """
     If run as main, all tests will be run
     """
-    test.test_iris_euclidean(lambda data, measure: flame_cluster(data, 10, 0.1, measure))
-    #test.run_tests(lambda data, measure: flame_cluster(data, 3, 0.1, measure))
+    #test.test_iris_euclidean(lambda data, measure: flame_cluster(data, 10, 0.1, measure))
+    test.run_tests(lambda data, measure: flame_cluster(data, 3, 0.1, measure))
+    dl_missing()
