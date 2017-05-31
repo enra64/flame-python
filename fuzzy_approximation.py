@@ -64,7 +64,6 @@ def fuzzy_approximation(data, knn, iterations, cluster_supporting_objects, clust
         for i in range(0, item_count, 1):
             graph = knn_graph[i]
             weight = weights[i]
-            print weight
             fuzzy = membership[i]
             fuzzy2 = membership2
             calculation = 0.0
