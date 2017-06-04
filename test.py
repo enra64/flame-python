@@ -1,10 +1,11 @@
 # -*- coding: utf-8 -*-
-
+import functools
 import numpy
 from os import listdir
 from os.path import isfile, join
 import time
 from scipy.io import arff
+from multiprocess import Pool
 
 __available_measures = ['braycurtis', 'canberra', 'chebyshev', 'cityblock', 'correlation', 'cosine', 'dice',
                         'euclidean', 'hamming', 'jaccard', 'kulsinski', 'mahalanobis', 'matching', 'minkowski',
@@ -80,7 +81,10 @@ def test_all_measure(cluster_function, measure):
         dataset, length = __load_file("datasets/" + data_set_path)
         print("\trunning " + data_set_path)
         if length > 0:
-            cluster_function(dataset, measure)
+            try:
+                cluster_function(dataset, measure)
+            except Exception as e:
+                print("EXCEPTION:" + str(e))
 
 
 def test_dataset_all(cluster_function, data_set_path):
@@ -109,7 +113,7 @@ def test_iris_euclidean(cluster_function):
         cluster_function(dataset, "euclidean")
 
 
-def run_tests(cluster_function):
+def run_tests(cluster_function, multi_core=True):
     """
     Run all available tests
     
@@ -117,5 +121,8 @@ def run_tests(cluster_function):
         where distance_measure is a distance measurement function name as seen in scipys pdist
     :return: nothing
     """
-    for measure in __available_measures:
-        test_all_measure(cluster_function, measure)
+    if multi_core:
+        Pool(4).map(lambda measure: test_all_measure(cluster_function, measure), __available_measures)
+    else:
+        for measure in __available_measures:
+            test_all_measure(cluster_function, measure)
