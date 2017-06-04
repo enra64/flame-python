@@ -2,6 +2,7 @@
 import numpy
 
 import test
+from flame_error import FlameError
 
 from structure_information_extraction import extract_structure_information
 from fuzzy_approximation import fuzzy_approximation
@@ -9,16 +10,7 @@ from fuzzy_approximation import fuzzy_approximation
 
 # from cluster_construction import cluster_construction
 
-class FlameError(Exception):
-    """
-    Exception class to signal errors that have occurred in our code
-    :param Exception: super class
-    :return: nothing
-    """
-    pass
-
-
-def flame_cluster(data, k, outlier_threshold, distance_measure):
+def flame_cluster(data, k, outlier_threshold, distance_measure, minkowski_p=None, weighted_minkowsky_weights=None):
     """
     Main function. Coordinates the two phases required by the algorithm
 
@@ -47,14 +39,23 @@ def flame_cluster(data, k, outlier_threshold, distance_measure):
         ‘sokalsneath’,
         ‘sqeuclidean’,
         ‘yule’
+    :param minkowski_p: The p-norm to apply. Mandatory for un/weighted Minkowski distance. Ignored otherwise.
+    :param weighted_minkowsky_weights: The weight vector. Mandatory for weighted Minkowski. Ignored otherwise.
     :return: a list of labels.
     """
     try:
-        structure_information = extract_structure_information(data, k, outlier_threshold, distance_measure)
+        structure_information = extract_structure_information(
+            data,
+            k,
+            outlier_threshold,
+            distance_measure,
+            minkowski_p,
+            weighted_minkowsky_weights)
         return fuzzy_approximation(data, k, 10, *structure_information)
     except numpy.linalg.LinAlgError as err:
         if err.message == "Singular matrix" and distance_measure == "mahalanobis":
-            raise FlameError("Mahalanobis distance used for dataset with singular distance matrix. That will not work.")
+            raise FlameError("Mahalanobis distance used for dataset with singular distance matrix. That will not work. "
+                             "May be caused by having more dimensions than data points.")
 
 
 if __name__ == "__main__":
@@ -62,5 +63,5 @@ if __name__ == "__main__":
     If run as main, all tests will be run
     """
     test.test_iris_euclidean(lambda data, measure: flame_cluster(data, 10, 0.1, measure))
-    #test.run_tests(lambda data, measure: flame_cluster(data, 3, 0.1, measure))
-    #test.test_all_measure(lambda data, measure: flame_cluster(data, 3, 0.1, measure), "mahalanobis")
+    #test.run_tests(lambda data, measure: flame_cluster(data, 3, 0.1, measure, 17), process_count=8)
+    #test.test_all_measure(lambda data, measure: flame_cluster(data, 3, 0.1, measure, 17), "minkowski", process_count=8)

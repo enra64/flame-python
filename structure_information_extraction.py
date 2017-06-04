@@ -6,14 +6,16 @@ import numpy
 
 from scipy.spatial.distance import squareform, pdist
 
+from flame_error import FlameError
+
 
 def extract_structure_information(
         data,
         k,
         outlier_threshold,
         distance_measure,
-        minkowski_p= None,
-        weighted_minkowsky_weights = None):
+        minkowski_p=None,
+        weighted_minkowski_weights=None):
     """
     Extract structure information from the dataset
 
@@ -42,8 +44,8 @@ def extract_structure_information(
         ‘sokalsneath’,
         ‘sqeuclidean’,
         ‘yule’
-    :param minkowski_p: The p-norm to apply Only for Minkowski, weighted and unweighted. Mandatory
-    :param weighted_minkowsky_weights: The weight vector. Only for weighted Minkowski. Mandatory
+    :param minkowski_p: The p-norm to apply. Mandatory for un/weighted Minkowski distance
+    :param weighted_minkowski_weights: The weight vector. Mandatory for weighted Minkowski
     :return: a tuple of lists: (cluster supporting objects, cluster outliers, rest),
         where each list contains the indices of the objects in the data matrix
         * Cluster Supporting Object (CSO): object with density higher than all its neighbors
@@ -51,22 +53,21 @@ def extract_structure_information(
         * Rest Object: object not assigned to one of the previous groups
     """
     # check that a p value exists if minkowski distance is used
-    if distance_measure == 'minkowski' or distance_measure == 'wminkowski':
-        assert minkowski_p is not None, "Minkowski distance requires a p value to be supplied!"
+    if (distance_measure == 'minkowski' or distance_measure == 'wminkowski') and minkowski_p is None:
+        raise FlameError("Minkowski distance requires a p value to be supplied!")
     # check that a weight vector exists if weighted minkowski is used
-    elif distance_measure == 'wminkowski':
-        assert weighted_minkowsky_weights is not None, "Weighted Minkowski distance requires a weight vector!"
+    if distance_measure == 'wminkowski' and weighted_minkowski_weights is None:
+        raise FlameError("Weighted Minkowski distance requires a weight vector!")
 
     item_count = data.shape[0]
 
     if k > item_count:
-        raise ValueError("More clusters than data points requested!")
-
+        raise FlameError("More clusters than data points requested!")
     if k <= 0:
-        raise ValueError("No Cluster center requested")
+        raise FlameError("Requested cluster center count is " + str(k) + "...")
 
     # get a distance matrix describing our data from scipy, square it so creating the knn graph is easy
-    distance_matrix = squareform(pdist(data, distance_measure, p=minkowski_p, w=weighted_minkowsky_weights))
+    distance_matrix = squareform(pdist(data, distance_measure, p=minkowski_p, w=weighted_minkowski_weights))
 
     # create an adjacency list describing the k nearest neighbours for each item
     knn_graph = numpy.apply_along_axis(lambda row: row.argsort()[1:k + 1], arr=distance_matrix, axis=1)

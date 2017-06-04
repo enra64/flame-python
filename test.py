@@ -1,11 +1,9 @@
 # -*- coding: utf-8 -*-
-import functools
 import numpy
 from os import listdir
 from os.path import isfile, join
 import time
 from scipy.io import arff
-from multiprocess import Pool
 
 __available_measures = ['braycurtis', 'canberra', 'chebyshev', 'cityblock', 'correlation', 'cosine', 'dice',
                         'euclidean', 'hamming', 'jaccard', 'kulsinski', 'mahalanobis', 'matching', 'minkowski',
@@ -22,10 +20,9 @@ def __load_file(path):
     """
     data, meta = arff.loadarff(open(path, 'r'))
     if data.shape == (0,):
-        print("EMPTY DATA SET:\t\t\t\t\t\t\t\t\t\t" + meta.name.strip("\""))
         return numpy.empty((0, len(meta._attributes))), 0
     else:
-        return data[meta.names()[:-1]].view(numpy.float).reshape(data.shape + (-1,)), data.shape[0]
+        return data[meta.names()[:-1]].reshape(data.shape + (-1,)), data.shape[0]
 
 
 def time_flame(cluster_function, data, measure, count):
@@ -68,7 +65,7 @@ def test_exec_duration(cluster_function, measure, path, iterations, sub_iteratio
         min([time_flame(cluster_function, data, measure, sub_iterations) for _ in range(iterations)])))
 
 
-def test_all_measure(cluster_function, measure):
+def test_all_measure(cluster_function, measure, process_count):
     """
     Test cluster_function for all available data sets. The distance_measure parameter will always be measure.
 
@@ -77,14 +74,27 @@ def test_all_measure(cluster_function, measure):
     :return: nothing
     """
     print("test all sets with " + measure)
-    for data_set_path in [f for f in listdir("datasets") if isfile(join("datasets", f))]:
-        dataset, length = __load_file("datasets/" + data_set_path)
-        print("\trunning " + data_set_path)
-        if length > 0:
-            try:
-                cluster_function(dataset, measure)
-            except Exception as e:
-                print("EXCEPTION:" + str(e))
+    data_set_paths = [f for f in listdir("datasets") if isfile(join("datasets", f))]
+
+    # function for verbosely testing the clustering function
+    def cluster_with_catching(path):
+        try:
+            data, length = __load_file("datasets/" + path)
+            if length > 0:
+                cluster_function(data, measure)
+                #print(str(path) + " did not die")
+            else:
+                print(str(path) + "is empty")
+        except Exception as e:
+            print(str(path) + " threw an EXCEPTION: " + str(type(e)) + ": " + str(e))
+
+    # run the tests in sequence or parallel
+    if process_count > 1:
+        from multiprocess import Pool
+        Pool(process_count).map(cluster_with_catching, data_set_paths)
+    else:
+        for data_set_path in data_set_paths:
+            cluster_with_catching(data_set_path)
 
 
 def test_dataset_all(cluster_function, data_set_path):
@@ -113,16 +123,14 @@ def test_iris_euclidean(cluster_function):
         cluster_function(dataset, "euclidean")
 
 
-def run_tests(cluster_function, multi_core=True):
+def run_tests(cluster_function, process_count):
     """
     Run all available tests
     
     :param cluster_function: the clustering function. Signature is clustering(data: ndarray, distance_measure: str), 
         where distance_measure is a distance measurement function name as seen in scipys pdist
+    :param process_count: number of parallel processes to use for testing. 1 will run sequentially.
     :return: nothing
     """
-    if multi_core:
-        Pool(4).map(lambda measure: test_all_measure(cluster_function, measure), __available_measures)
-    else:
-        for measure in __available_measures:
-            test_all_measure(cluster_function, measure)
+    for measure in __available_measures:
+        test_all_measure(cluster_function, measure, process_count)
