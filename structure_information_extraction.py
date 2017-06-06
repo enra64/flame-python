@@ -51,6 +51,8 @@ def extract_structure_information(
         * Cluster Supporting Object (CSO): object with density higher than all its neighbors
         * Cluster Outliers: object with density lower than all its neighbors, and lower than a predefined threshold
         * Rest Object: object not assigned to one of the previous groups
+        * Distance matrix: a matrix of distances between data points
+        * K-Nearest neighbours: a python list of numpy arrays of the nearest neighbours of each element
     """
     # check that a p value exists if minkowski distance is used
     if (distance_measure == 'minkowski' or distance_measure == 'wminkowski') and minkowski_p is None:
@@ -69,8 +71,22 @@ def extract_structure_information(
     # get a distance matrix describing our data from scipy, square it so creating the knn graph is easy
     distance_matrix = squareform(pdist(data, distance_measure, p=minkowski_p, w=weighted_minkowski_weights))
 
-    # create an adjacency list describing the k nearest neighbours for each item
-    knn_graph = numpy.apply_along_axis(lambda row: row.argsort()[1:k + 1], arr=distance_matrix, axis=1)
+    # creates an adjacency list where each row contains the k nearest neighbours. this is extended by those neighbours
+    # that have more than 1 element with the distance of the k^th neighbour
+    knn_graph = []
+    for i in range(item_count):
+        distance_matrix_row = distance_matrix[i]
+        knns = distance_matrix_row.argsort()[1:]
+
+        same_distance_k = k
+        last_neighbour_distance = distance_matrix_row[knns[k-1]]
+        for i in range(k, item_count):
+            if distance_matrix_row[knns[i]] == last_neighbour_distance:
+                same_distance_k += 1
+            else:
+                break
+
+        knn_graph.append(knns[:same_distance_k])
 
     # calculate the density for each item
     max_distance = numpy.max(distance_matrix)
