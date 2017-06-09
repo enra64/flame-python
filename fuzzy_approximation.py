@@ -14,101 +14,91 @@ def fuzzy_approximation(data, knn, iterations, cluster_supporting_objects, clust
     :return: list of labels. index i contains the label of object i from the original data set
     """
 
-    item_count = data.shape[0]
-    cso_count=len(cluster_supporting_objects)
-    k=0
-
     """
     PART 1: Initialization of fuzzy membership
     """
-    membership = [[0 for x in range(cso_count+1)]for y in range(item_count)]
-    membership2 = membership;
+    cso_count=len(cluster_supporting_objects)
+    item_count = data.shape[0]
+    cso_counter=0
+    fuzzyship = [[0 for x in range(cso_count+1)]for y in range(item_count)]
+    initFuzzy = [[0 for x in range(cso_count+1)]for y in range(item_count)]
 
     for i in range(0, item_count, 1):
+        #Each CSO is assigned with fixed and full membership to itself to represent one cluster
         if(i in cluster_supporting_objects):
-            """
-            Each CSO is assigned with fixed and full membership to itself to represent one cluster
-            """
-            membership[i][k] = membership2[i][k] = 1.0
-            k+=1
+            fuzzyship[i][cso_counter] = 1
+            initFuzzy[i][cso_counter] = 1
+            cso_counter+=1
+        #All outliers are assigned with fixed and full membership to the outlier group
         elif(i in cluster_outliers):
-            """
-            All outliers are assigned with fixed and full membership to the outlier group
-            """
-            membership[i][cso_count] = membership2[i][cso_count] = 1.0
+            fuzzyship[i][cso_count] = 1
+            initFuzzy[i][cso_count] = 1
+        #The rest are assigned with equal memberships to all clusters and the outlier group
         else:
-            """
-            The rest are assigned with equal memberships to all clusters and the outlier group
-            """
-            for fill in range(0, cso_count+1, 1):
-                membership[i][fill] = membership2[i][fill] = 1.0/(cso_count+1)
+            for j in range(0, cso_count+1, 1):
+                fuzzyship[i][j] = 1.0/(cso_count+1)
+
+    #for num in membership2:
+        #print num
 
     """
     Weights are only dependent on
     the ranking of distances of the neighbors, so it is more
     robust against distance transformations.
     """
-    weights = [[0 for x in range(knn)]for y in range(item_count)]
+    weight = [[0 for x in range(knn)]for y in range(item_count)]
 
     for i in range(0, item_count, 1):
-        calculation = 0.5*knn*(knn+1.0)
+        k = knn
+        d = distance_matrix[i][knn-1]
+
+        for j in range(knn+1, item_count,1):
+            if(distance_matrix[i][j] == d):
+                k += 1
+            else:
+                break
+
+        calculation = 0.5*k*(k+1.0)
         for j in range(0, knn, 1):
-            weights[i][j] = (knn-j) / calculation
+            weight[i][j] = (k-j) / calculation
 
     """
     PART 2: Fuzzy membership update
     """
-    for t in range(0, iterations, 1):
-        acc = 0
+    for i in range(0, iterations, 1):
 
-        for i in range(0, item_count, 1):
-            graph = knn_graph[i]
-            weight = weights[i]
-            fuzzy = membership[i]
-            fuzzy2 = membership2
-            calculation = 0.0
+        for j in range(0, item_count, 1):
 
-            #Check if value is even
-            if(t%2==0):
-                fuzzy = membership2[i]
-                fuzzy2 = membership
+            if(j in the_rest):
+                sum_fuzzy = 0.0
 
-            """
-            The fuzzy membership of each object is updated by a linear combination of the fuzzy memberships of its nearest neighbors
-            """
-            for j in range(0, cso_count+1, 1):
-                fuzzy[j] = 0.0
+                #The fuzzy membership of each object is updated by a linear combination of the fuzzy memberships of its nearest neighbors
+                for k in range(0, cso_count+1, 1):
 
-                for k in range(0,knn,1):
-                    fuzzy[j] += weight[k] * fuzzy2[ graph[k] ][j]
+                    if(i%2==0):
+                        fuzzyship[j][k] = 0;
+                        for n in range(0,knn,1):
+                            fuzzyship[j][k] += weight[j][n] * initFuzzy[knn_graph[j][n]][k]
+                    else:
+                        initFuzzy[j][k] = 0;
+                        for n in range(0,knn,1):
+                            initFuzzy[j][k] += weight[j][n]*fuzzyship[knn_graph[j][n]][k]
 
-                acc += (fuzzy[j] - fuzzy2[i][j]) * (fuzzy[j] - fuzzy2[i][j])
-                calculation += fuzzy[j]
+                    sum_fuzzy += fuzzyship[j][k]
 
-            for j in range(0, cso_count+1, 1):
-                fuzzy[j] = fuzzy[j] / calculation
+        if(i%10 == 0):
+            deviation=0
+            for j in range(0, item_count, 1):
+                if(j in the_rest):
+                    for k in range(0, cso_count+1, 1):
+                        tmp=0
+                        for n in range(0,knn,1):
+                            tmp+=weight[j][n]*fuzzyship[ knn_graph[j][n] ][ k ]
+                        deviation+=(fuzzyship[j][k]-tmp)*(fuzzyship[j][k]-tmp)
 
-        if( acc < 1e-6 ):
+        if(deviation < 1e-6):
             break
 
-    #for num in fuzzy2:
-        #print num
 
-    """
-    Update the membership of all objects to remove
-    clusters that contains only the CSO.
-    """
-    for i in range(0, item_count, 1):
-        graph = knn_graph[i]
-        weight = weights[i]
-        fuzzy = membership[i]
-        fuzzy2 = membership2
-
-        for j in range(0, cso_count+1, 1):
-            fuzzy[j] = 0.0
-            for k in range(0,knn,1):
-                fuzzy[j] += weight[k] * fuzzy2[ graph[k] ][j]
-            acc += (fuzzy[j] - fuzzy2[i][j]) * (fuzzy[j] - fuzzy2[i][j])
-
-    #for num in fuzzy2:
-        #print num
+    for num in fuzzyship:
+        print num
