@@ -6,9 +6,7 @@ from flame_error import FlameError
 
 from structure_information_extraction import extract_structure_information
 from fuzzy_approximation import fuzzy_approximation
-
-
-# from cluster_construction import cluster_construction
+from cluster_construction import cluster_construction
 
 def flame_cluster(data, k, outlier_threshold, distance_measure, minkowski_p=None, weighted_minkowsky_weights=None):
     """
@@ -51,7 +49,9 @@ def flame_cluster(data, k, outlier_threshold, distance_measure, minkowski_p=None
             distance_measure,
             minkowski_p,
             weighted_minkowsky_weights)
-        return fuzzy_approximation(data, k, 10, *structure_information)
+        approximation_information = fuzzy_approximation(data, k, 100, *structure_information)
+        return cluster_construction(*approximation_information)
+
     except numpy.linalg.LinAlgError as err:
         if err.message == "Singular matrix" and distance_measure == "mahalanobis":
             raise FlameError("Mahalanobis distance used for dataset with singular distance matrix. That will not work. "

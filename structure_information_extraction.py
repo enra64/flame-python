@@ -119,7 +119,7 @@ def extract_structure_information(
             # print " rest"
             rest.append(i)
 
-    # print "{} csos, {} outliers, {} rest".format(len(cluster_supporting_objects), len(outliers), len(rest))
+    #print "{} csos, {} outliers, {} rest".format(len(cluster_supporting_objects), len(outliers), len(rest))
 
 
     return cluster_supporting_objects, outliers, rest, distance_matrix, knn_graph

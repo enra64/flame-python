@@ -1,66 +1,16 @@
-def cluster_construction(data, cso_count, members):
+import sys
 
-    N = data.shape[0]
-    C = cso_count+1
-    memberships = members
-    clusters = []
+def cluster_construction(fuzzyship,cluster_supporting_objects, cluster_outliers, the_rest):
 
-    """
-    Sort objects based on the "entropy" of fuzzy memberships.
-    """
-    for i in range(0, N, 1):
-        vals[i].index = i
-        vals[i].value = 0.0
-        for j in range(0, C, 1):
-            fs = memberships[i][j]
-            if( fs > 1E-9):
-                vals[i].value -= fs * log( fs )
+    if (len(cluster_supporting_objects)>0):
+        clusters = [[] for i in range(len(cluster_supporting_objects))]
 
-    #PartialQuickSort( vals, 0, N-1, N )
+        for index, num in enumerate(fuzzyship):
+            clusters[num.index(max(num))].append(index)
 
-    if( thd <0 || thd > 1.0 ):
-        """
-        Assign each object to the cluster
-         * in which it has the highest membership.
-         """
-        for i in range(0, N, 1):
-            id = vals[i].index
-            fmax = 0
-            imax = -1
-            for j in range(0, C, 1):
-                if( memberships[id][j] > fmax ):
-                    imax = j
-                    fmax = memberships[id][j]
+        for index, cluster in enumerate(clusters):
+            print ("\nCluster: {} Members: {}\n{}".format(index+1, len(clusters[index]), cluster))
 
-            #IntArray_Push( self->clusters + imax, id )
-
+        print ("\n")
     else:
-        """
-        Assign each object to all the clusters
-         in which it has membership higher than thd,
-         otherwise, assign it to the outlier group.
-         """
-        for i in range(0, N, 1):
-            id = vals[i].index
-            imax = -1
-            for j in range(0, C, 1):
-                if( memberships[id][j] > thd || ( j == C-1 && imax <0 ) ):
-                    imax = j
-                    clust = clusters + j
-                    #IntArray_Push( self->clusters + j, id )
-    """
-    removing empty clusters
-    """
-    C = 0;
-    for i in range(0, cso_count, 1):
-        if( clusters[i].size >0 ):
-            clusters[C] = clusters[i]
-            C +=1
-
-
-    """
-    keep the outlier group, even if its empty
-    """
-    clusters[C] = clusters[cso_count]
-    C ++
-    self->count = C
+        print ("\nERROR: No CSO's found -> {} csos, {} outliers, {} rest\n".format(len(cluster_supporting_objects), len(cluster_outliers), len(the_rest)))

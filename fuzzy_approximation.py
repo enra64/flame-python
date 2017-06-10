@@ -99,6 +99,4 @@ def fuzzy_approximation(data, knn, iterations, cluster_supporting_objects, clust
         if(deviation < 1e-6):
             break
 
-
-    for num in fuzzyship:
-        print num
+    return fuzzyship ,cluster_supporting_objects, cluster_outliers, the_rest
