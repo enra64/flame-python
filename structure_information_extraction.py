@@ -71,6 +71,8 @@ def extract_structure_information(
     # get a distance matrix describing our data from scipy, square it so creating the knn graph is easy
     distance_matrix = squareform(pdist(data, distance_measure, p=minkowski_p, w=weighted_minkowski_weights))
 
+    test = numpy.array([[[(5.1, 3.5, 1.4, 0.2)]],[]])
+
     # creates an adjacency list where each row contains the k nearest neighbours. this is extended by those neighbours
     # that have more than 1 element with the distance of the k^th neighbour
     knn_graph = []
@@ -80,8 +82,8 @@ def extract_structure_information(
 
         same_distance_k = k
         last_neighbour_distance = distance_matrix_row[knns[k-1]]
-        for i in range(k, item_count):
-            if distance_matrix_row[knns[i]] == last_neighbour_distance:
+        for j in range(k, item_count):
+            if distance_matrix_row[knns[j]] == last_neighbour_distance:
                 same_distance_k += 1
             else:
                 break
@@ -93,7 +95,9 @@ def extract_structure_information(
 
     densities = numpy.empty((item_count,), dtype=float)
     for i in range(item_count):
-        distance_sum = (numpy.sum(distance_matrix[i].take(knn_graph[i])) / k)
+        knn_row = knn_graph[i]
+        distance_matrix_row = distance_matrix[i]
+        distance_sum = (numpy.sum(distance_matrix_row.take(knn_row)) / len(knn_row))
         if distance_sum > 0:
             densities[i] = max_distance / distance_sum
         else:
@@ -108,15 +112,11 @@ def extract_structure_information(
     for i in range(densities.shape[0]):
         knn_densities = densities.take(knn_graph[i])
         item_density = densities[i]
-        # print "item {} with density {}; max neighbour density {}, min nd {}, sorted into".format(i, item_density, knn_densities.max(), knn_densities.min()), end=""
-        if item_density <= outlier_threshold and densities[i] < knn_densities.min():
+        if item_density <= outlier_threshold and item_density < knn_densities.min():
             outliers.append(i)
-            # print " outliers"
         elif item_density > knn_densities.max():
             cluster_supporting_objects.append(i)
-            # print " csos"
         else:
-            # print " rest"
             rest.append(i)
 
     #print "{} csos, {} outliers, {} rest".format(len(cluster_supporting_objects), len(outliers), len(rest))

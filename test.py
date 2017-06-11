@@ -22,8 +22,15 @@ def __load_file(path):
     if data.shape == (0,):
         return numpy.empty((0, len(meta._attributes))), 0
     else:
-        return data[meta.names()[:-1]].reshape(data.shape + (-1,)), data.shape[0]
+        data_matrix = numpy.zeros(shape=(data.shape[0], len(data[0])))
 
+        for i in range(len(data)):
+            arff_row = data[i]
+
+            for j in range(len(arff_row) - 1):
+                data_matrix[i][j] = arff_row[j]
+
+        return data_matrix, data.shape[0]
 
 def time_flame(cluster_function, data, measure, count):
     """
@@ -118,7 +125,7 @@ def test_iris_euclidean(cluster_function):
     :param cluster_function: the clustering function. Signature is clustering(data: ndarray, distance_measure: str) 
     :return: nothing
     """
-    dataset, length = __load_file("datasets/c_Iris_test.arff")
+    dataset, length = __load_file("datasets/Iris_training.arff")
     if length > 0:
         cluster_function(dataset, "euclidean")
 

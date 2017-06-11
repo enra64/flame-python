@@ -1,16 +1,25 @@
-import sys
+import numpy
 
-def cluster_construction(fuzzyship,cluster_supporting_objects, cluster_outliers, the_rest):
 
-    if (len(cluster_supporting_objects)>0):
-        clusters = [[] for i in range(len(cluster_supporting_objects))]
+def cluster_construction(fuzzyship, cluster_supporting_objects, cluster_outliers, the_rest):
+    result = numpy.empty((len(fuzzyship, )))
+    for i in range(len(cluster_supporting_objects)):
+        result[cluster_supporting_objects[i]] = i
 
-        for index, num in enumerate(fuzzyship):
-            clusters[num.index(max(num))].append(index)
+    outlier_cluster = len(cluster_supporting_objects)
+    for outlier_index in cluster_outliers:
+        result[outlier_index] = outlier_cluster
 
-        for index, cluster in enumerate(clusters):
-            print ("\nCluster: {} Members: {}\n{}".format(index+1, len(clusters[index]), cluster))
+    for obj_index in the_rest:
+        result[obj_index] = numpy.argmax(fuzzyship[obj_index])
 
-        print ("\n")
-    else:
-        print ("\nERROR: No CSO's found -> {} csos, {} outliers, {} rest\n".format(len(cluster_supporting_objects), len(cluster_outliers), len(the_rest)))
+    if True:
+        print (
+            "{} csos, {} outliers, {} rest\n".format(len(cluster_supporting_objects), len(cluster_outliers),
+                                                     len(the_rest)))
+
+        for index, cluster in enumerate(cluster_supporting_objects):
+            cluster_objects = numpy.where(result == index)
+            print ("Cluster {}, Members: {}\n{}".format(index + 1, len(cluster_objects[0]), cluster_objects))
+
+    return result
