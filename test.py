@@ -32,6 +32,7 @@ def __load_file(path):
 
         return data_matrix, data.shape[0]
 
+
 def time_flame(cluster_function, data, measure, count):
     """
     Time our implementation of the algorithm. Averages over count executions of cluster_function(data, measure)
@@ -88,8 +89,9 @@ def test_all_measure(cluster_function, measure, process_count):
         try:
             data, length = __load_file("datasets/" + path)
             if length > 0:
+                print "clustering " + str(path),
                 cluster_function(data, measure)
-                print(str(path) + " did not die")
+                print("; did not die")
             else:
                 print(str(path) + " is empty")
         except Exception as e:
@@ -120,14 +122,26 @@ def test_dataset_all(cluster_function, data_set_path):
 
 def test_iris_euclidean(cluster_function):
     """
-    Test cluster function with a single dataset and euclidean measure 
+    Test cluster function with iris dataset and euclidean measure
     
     :param cluster_function: the clustering function. Signature is clustering(data: ndarray, distance_measure: str) 
     :return: nothing
     """
-    dataset, length = __load_file("datasets/Iris_training.arff")
+    test(cluster_function, "Iris_training.arff", "euclidean")
+
+
+def test(cluster_function, dataset_name, measure):
+    """
+    Test cluster function with a single dataset and measure
+
+    :param cluster_function: the clustering function. Signature is clustering(data: ndarray, distance_measure: str)
+    :param dataset_name: name of the dataset file to load
+    :param measure: measure to use
+    :return: nothing
+    """
+    dataset, length = __load_file("datasets/" + dataset_name)
     if length > 0:
-        cluster_function(dataset, "euclidean")
+        cluster_function(dataset, measure)
 
 
 def run_tests(cluster_function, process_count):

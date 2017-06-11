@@ -79,7 +79,7 @@ def extract_structure_information(
         same_distance_k = k
         last_neighbour_distance = distance_matrix_row[knns[k-1]]
         for j in range(k, item_count):
-            if j >= len(knns) or distance_matrix_row[knns[j]] < last_neighbour_distance:
+            if j >= len(knns) or distance_matrix_row[knns[j]] > last_neighbour_distance:
                 break
             else:
                 same_distance_k += 1
