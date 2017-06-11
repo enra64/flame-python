@@ -64,9 +64,9 @@ def extract_structure_information(
     item_count = data.shape[0]
 
     if k > item_count:
-        raise FlameError("More clusters than data points requested!")
+        raise FlameError("More cluster neighbours (" + str(k) + ") requested than data points available! (" + str(item_count) + ")")
     if k <= 0:
-        raise FlameError("Requested cluster center count is " + str(k) + "...")
+        raise FlameError("Requested cluster neighbour count is " + str(k) + "...")
 
     # get a distance matrix describing our data from scipy, square it so creating the knn graph is easy
     distance_matrix = squareform(pdist(data, distance_measure, p=minkowski_p, w=weighted_minkowski_weights))
@@ -83,10 +83,10 @@ def extract_structure_information(
         same_distance_k = k
         last_neighbour_distance = distance_matrix_row[knns[k-1]]
         for j in range(k, item_count):
-            if distance_matrix_row[knns[j]] == last_neighbour_distance:
-                same_distance_k += 1
-            else:
+            if j >= len(knns) or distance_matrix_row[knns[j]] < last_neighbour_distance:
                 break
+            else:
+                same_distance_k += 1
 
         knn_graph.append(knns[:same_distance_k])
 

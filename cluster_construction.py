@@ -27,7 +27,7 @@ def cluster_construction(fuzzyship, cluster_supporting_objects, cluster_outliers
         result[obj_index] = numpy.argmax(fuzzyship[obj_index])
 
     # debugging purposes
-    if True:
+    if False:
         print (
             "{} csos, {} outliers, {} rest\n".format(len(cluster_supporting_objects), len(cluster_outliers),
                                                      len(the_rest)))

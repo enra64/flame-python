@@ -22,7 +22,7 @@ def __load_file(path):
     if data.shape == (0,):
         return numpy.empty((0, len(meta._attributes))), 0
     else:
-        data_matrix = numpy.zeros(shape=(data.shape[0], len(data[0])))
+        data_matrix = numpy.zeros(shape=(data.shape[0], len(data[0]) - 1))
 
         for i in range(len(data)):
             arff_row = data[i]
@@ -89,9 +89,9 @@ def test_all_measure(cluster_function, measure, process_count):
             data, length = __load_file("datasets/" + path)
             if length > 0:
                 cluster_function(data, measure)
-                #print(str(path) + " did not die")
+                print(str(path) + " did not die")
             else:
-                print(str(path) + "is empty")
+                print(str(path) + " is empty")
         except Exception as e:
             print(str(path) + " threw an EXCEPTION: " + str(type(e)) + ": " + str(e))
 

@@ -57,6 +57,11 @@ def flame_cluster(data, k, outlier_threshold, distance_measure, minkowski_p=None
         if err.message == "Singular matrix" and distance_measure == "mahalanobis":
             raise FlameError("Mahalanobis distance used for dataset with singular distance matrix. That will not work. "
                              "May be caused by having more dimensions than data points.")
+    except ValueError as err:
+        if "the covariance matrix is singular" in err.message and distance_measure == "mahalanobis":
+            raise FlameError(
+                "The number of data points is too small; the covariance matrix is singular. Try not using "
+                "mahalanobis distance.")
 
 
 if __name__ == "__main__":
