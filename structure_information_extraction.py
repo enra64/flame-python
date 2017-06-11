@@ -14,8 +14,7 @@ def extract_structure_information(
         k,
         outlier_threshold,
         distance_measure,
-        minkowski_p=None,
-        weighted_minkowski_weights=None):
+        minkowski_p=None):
     """
     Extract structure information from the dataset
 
@@ -55,11 +54,8 @@ def extract_structure_information(
         * K-Nearest neighbours: a python list of numpy arrays of the nearest neighbours of each element
     """
     # check that a p value exists if minkowski distance is used
-    if (distance_measure == 'minkowski' or distance_measure == 'wminkowski') and minkowski_p is None:
+    if distance_measure == 'minkowski' and minkowski_p is None:
         raise FlameError("Minkowski distance requires a p value to be supplied!")
-    # check that a weight vector exists if weighted minkowski is used
-    if distance_measure == 'wminkowski' and weighted_minkowski_weights is None:
-        raise FlameError("Weighted Minkowski distance requires a weight vector!")
 
     item_count = data.shape[0]
 
@@ -69,7 +65,7 @@ def extract_structure_information(
         raise FlameError("Requested cluster neighbour count is " + str(k) + "...")
 
     # get a distance matrix describing our data from scipy, square it so creating the knn graph is easy
-    distance_matrix = squareform(pdist(data, distance_measure, p=minkowski_p, w=weighted_minkowski_weights))
+    distance_matrix = squareform(pdist(data, distance_measure, p=minkowski_p))
 
     # creates an adjacency list where each row contains the k nearest neighbours
     # neighbours after the k-nearest-neighbour are appended if they have the same distance as the k-nearest-neighbour

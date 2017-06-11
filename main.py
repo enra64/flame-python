@@ -9,7 +9,7 @@ from fuzzy_approximation import fuzzy_approximation
 from cluster_construction import cluster_construction
 
 
-def flame_cluster(data, k, outlier_threshold, distance_measure, minkowski_p=None, weighted_minkowsky_weights=None):
+def flame_cluster(data, k, outlier_threshold, distance_measure, minkowski_p=None):
     """
     Main function. Coordinates the two phases required by the algorithm
 
@@ -38,8 +38,7 @@ def flame_cluster(data, k, outlier_threshold, distance_measure, minkowski_p=None
         ‘sokalsneath’,
         ‘sqeuclidean’,
         ‘yule’
-    :param minkowski_p: The p-norm to apply. Mandatory for un/weighted Minkowski distance. Ignored otherwise.
-    :param weighted_minkowsky_weights: The weight vector. Mandatory for weighted Minkowski. Ignored otherwise.
+    :param minkowski_p: The p-norm to apply. Mandatory for Minkowski distance. Ignored otherwise.
     :return: a list of labels: a vector where at index i is the index of the cluster the object belongs to
     """
     try:
@@ -48,8 +47,7 @@ def flame_cluster(data, k, outlier_threshold, distance_measure, minkowski_p=None
             k,
             outlier_threshold,
             distance_measure,
-            minkowski_p,
-            weighted_minkowsky_weights)
+            minkowski_p)
         approximation_information = fuzzy_approximation(data, k, 100, *structure_information)
         return cluster_construction(*approximation_information)
 
@@ -68,6 +66,6 @@ if __name__ == "__main__":
     """
     If run as main, all tests will be run
     """
-    test.test_iris_euclidean(lambda data, measure: flame_cluster(data, 20, 10, measure))
-    # test.run_tests(lambda data, measure: flame_cluster(data, 3, 0.1, measure, 17), process_count=8)
+    #test.test_iris_euclidean(lambda data, measure: flame_cluster(data, 20, 10, measure))
+    test.run_tests(lambda data, measure: flame_cluster(data, 3, 10, measure, 17), process_count=8)
     # test.test_all_measure(lambda data, measure: flame_cluster(data, 3, 0.1, measure, 17), "minkowski", process_count=8)
