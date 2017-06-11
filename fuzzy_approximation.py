@@ -17,6 +17,9 @@ def fuzzy_approximation(data, knn, iterations, cluster_supporting_objects, clust
     """
     PART 1: Initialization of fuzzy membership
     """
+    # avoid using knn, must use the length of knn graph at the object index, because neighbour count is object dependent
+    knn = None
+
     cso_count=len(cluster_supporting_objects)
     item_count = data.shape[0]
     cso_counter=0
@@ -46,21 +49,13 @@ def fuzzy_approximation(data, knn, iterations, cluster_supporting_objects, clust
     the ranking of distances of the neighbors, so it is more
     robust against distance transformations.
     """
-    weight = [[0 for x in range(knn)]for y in range(item_count)]
+    weight = []
 
-    for i in range(0, item_count, 1):
-        k = knn
-        d = distance_matrix[i][knn-1]
+    for knn_row in knn_graph:
+        neighbour_count = len(knn_row)
+        calculation = 0.5 * neighbour_count * (neighbour_count + 1.0)
+        weight.append([(neighbour_count - j) / calculation for j in range(neighbour_count)])
 
-        for j in range(knn+1, item_count,1):
-            if(distance_matrix[i][j] == d):
-                k += 1
-            else:
-                break
-
-        calculation = 0.5*k*(k+1.0)
-        for j in range(0, knn, 1):
-            weight[i][j] = (k-j) / calculation
 
     """
     PART 2: Fuzzy membership update
@@ -71,6 +66,7 @@ def fuzzy_approximation(data, knn, iterations, cluster_supporting_objects, clust
 
             if(j in the_rest):
                 sum_fuzzy = 0.0
+                knn = len(knn_graph[j])
 
                 #The fuzzy membership of each object is updated by a linear combination of the fuzzy memberships of its nearest neighbors
                 for k in range(0, cso_count+1, 1):
@@ -90,6 +86,7 @@ def fuzzy_approximation(data, knn, iterations, cluster_supporting_objects, clust
             deviation=0
             for j in range(0, item_count, 1):
                 if(j in the_rest):
+                    knn = len(knn_graph[j])
                     for k in range(0, cso_count+1, 1):
                         tmp=0
                         for n in range(0,knn,1):
