@@ -49,7 +49,7 @@ def flame_cluster(data, k, outlier_threshold, distance_measure, iterations, mink
             outlier_threshold,
             distance_measure,
             minkowski_p)
-        approximation_information = fuzzy_approximation(data, k, iterations, *structure_information)
+        approximation_information = fuzzy_approximation(data, iterations, *structure_information)
         clusters = cluster_construction(*approximation_information)
 
         for i in clusters: print int(i)
