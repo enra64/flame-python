@@ -67,7 +67,7 @@ if __name__ == "__main__":
     """
     If run as main, all tests will be run
     """
-    test.test(lambda data, measure: flame_cluster(data, 3, 0.1, measure, 100), "Banana--training.arff", "braycurtis")
+    #test.test(lambda data, measure: flame_cluster(data, 3, 0.1, measure, 100), "Banana--training.arff", "braycurtis")
     #test.test_iris_euclidean(lambda data, measure: flame_cluster(data, 20, 10, measure, 100))
-    #test.run_tests(lambda data, measure: flame_cluster(data, 3, 10, measure, 100, 17), process_count=8)
+    test.run_tests(lambda data, measure: flame_cluster(data, 3, 10, measure, 100, 17), process_count=8)
     #test.test_all_measure(lambda data, measure: flame_cluster(data, 3, 0.1, measure, 10, 17), "braycurtis", process_count=1)
