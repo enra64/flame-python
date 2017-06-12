@@ -49,7 +49,11 @@ def flame_cluster(data, k, outlier_threshold, distance_measure, minkowski_p=None
             distance_measure,
             minkowski_p)
         approximation_information = fuzzy_approximation(data, k, 100, *structure_information)
-        return cluster_construction(*approximation_information)
+        clusters = cluster_construction(*approximation_information)
+
+        for i in clusters: print int(i)
+
+        return clusters
 
     except numpy.linalg.LinAlgError as err:
         if err.message == "Singular matrix" and distance_measure == "mahalanobis":
@@ -66,6 +70,6 @@ if __name__ == "__main__":
     """
     If run as main, all tests will be run
     """
-    #test.test_iris_euclidean(lambda data, measure: flame_cluster(data, 20, 10, measure))
-    test.run_tests(lambda data, measure: flame_cluster(data, 3, 10, measure, 17), process_count=8)
+    test.test_iris_euclidean(lambda data, measure: flame_cluster(data, 3, 10, measure))
+    #test.run_tests(lambda data, measure: flame_cluster(data, 3, 10, measure, 17), process_count=8)
     # test.test_all_measure(lambda data, measure: flame_cluster(data, 3, 0.1, measure, 17), "minkowski", process_count=8)
