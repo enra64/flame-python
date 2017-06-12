@@ -13,7 +13,12 @@ def fuzzy_approximation(data, iterations, cluster_supporting_objects, cluster_ou
     :param the_rest: objects not assigned to one of the previous groups
     :param distance_matrix: a matrix of distances between data points from structure_information_extraction
     :param knn_graph: neighbours with the same distance as the k-nearest-neighbour
-    :return: list of labels. index i contains the label of object i from the original data set
+    :return: a tuple of lists: fuzzyship and from structure_information_extraction (cluster supporting objects, cluster outliers, rest),
+        where each list contains the indices of the objects in the data matrix
+        * fuzzyship: object with relative membership to each cso
+        * cluster_supporting_objects (CSO): object with density higher than all its neighbors
+        * cluster_outliers: object with density lower than all its neighbors, and lower than a predefined threshold
+        * the_rest: object not assigned to one of the previous groups
     """
 
     """
